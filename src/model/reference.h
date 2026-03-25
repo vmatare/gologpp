@@ -72,7 +72,7 @@ class GeneralSemantics<Binding>
 public:
 	GeneralSemantics(const Binding &elem, AExecutionController &context);
 
-	virtual ~GeneralSemantics<Binding>() = default;
+	virtual ~GeneralSemantics() = default;
 
 	const Binding &element() const;
 	void update_element(const Binding *new_element);
@@ -325,6 +325,15 @@ public:
 		return unique_ptr<Reference<TargetT>>(new Reference<TargetT>(this->target(), std::move(gb)));
 	}
 
+	virtual bool operator == (const Expression &other) const {
+		try {
+			const ReferenceBase<TargetT> &o = dynamic_cast<const ReferenceBase<TargetT> &>(other);
+			return static_cast<const ReferenceBase<TargetT> &>(*this) == o;
+		} catch (std::bad_cast &) {
+			return false;
+		}
+	}
+
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -348,9 +357,6 @@ public:
 	TargetT &operator * ();
 	const TargetT *operator -> () const;
 	TargetT *operator -> ();
-
-	bool operator == (const ZeroArityReference<TargetT> &other) const;
-	bool operator != (const ZeroArityReference<TargetT> &other) const;
 
 	const string &name() const;
 	virtual bool bound() const override;
@@ -413,14 +419,6 @@ shared_ptr<TargetT> ZeroArityReference<TargetT>::target()
 template<class TargetT>
 shared_ptr<const TargetT> ZeroArityReference<TargetT>::target() const
 { return std::dynamic_pointer_cast<const TargetT>(target_); }
-
-template<class TargetT>
-bool ZeroArityReference<TargetT>::operator ==(const ZeroArityReference<TargetT> &other) const
-{ return *target() == *other.target(); }
-
-template<class TargetT>
-bool ZeroArityReference<TargetT>::operator !=(const ZeroArityReference<TargetT> &other) const
-{ return !(*this == other); }
 
 template<class TargetT>
 bool ZeroArityReference<TargetT>::consistent() const

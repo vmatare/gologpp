@@ -138,8 +138,8 @@ public:
 
 	virtual string to_string(const string &) const override;
 
-	virtual bool operator == (const Expression &c) const override;
-	virtual bool operator != (const Expression &c) const override;
+	virtual bool operator == (const Expression &c) const;
+	virtual bool operator != (const Expression &c) const;
 
 	bool operator >= (const Value &) const;
 	bool operator <= (const Value &) const;
@@ -208,7 +208,7 @@ class GeneralSemantics<Value>
 public:
 	GeneralSemantics(const Value &elem, AExecutionController &context);
 
-	virtual ~GeneralSemantics<Value>() = default;
+	virtual ~GeneralSemantics() = default;
 
 	virtual AExecutionController &context() const override;
 

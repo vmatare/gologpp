@@ -26,7 +26,7 @@ GeneralSemantics<History>::GeneralSemantics(History &h, AExecutionController &co
 , context_(context)
 {}
 
-GeneralSemantics<History>::~GeneralSemantics<History>()
+GeneralSemantics<History>::~GeneralSemantics()
 {}
 
 

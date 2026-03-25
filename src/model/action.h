@@ -57,7 +57,6 @@ public:
 	virtual ~AbstractAction() override = default;
 
 	virtual bool operator == (const AbstractAction &other) const;
-	bool operator != (const AbstractAction &other) const;
 
 	const Expression &precondition() const;
 	Expression &precondition();

@@ -42,7 +42,7 @@ public:
 	, context_(context)
 	{}
 
-	virtual ~GeneralSemantics<GologT>() = default;
+	virtual ~GeneralSemantics() = default;
 
 	/// @return A reference to the concrete language element (code model element) covered by this
 	/// semantics instance

@@ -28,7 +28,7 @@ public:
     virtual ~Name() = default;
 
     operator string () const;
-    virtual bool operator == (const Name &other) const;
+    bool operator == (const Name &other) const;
     bool operator != (const Name &other) const;
     virtual size_t hash() const;
     const string &name() const;

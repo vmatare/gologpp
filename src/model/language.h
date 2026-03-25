@@ -19,7 +19,6 @@
 #define GOLOGPP_LANGUAGE_H_
 
 #include "model_element.h"
-#include <memory>
 #include "types.h"
 
 namespace gologpp {

@@ -43,8 +43,8 @@ public:
 template<>
 class GeneralSemantics<History> : public virtual GeneralSemantics<ModelElement> {
 public:
-	GeneralSemantics<History>(History &history, AExecutionController &context);
-	virtual ~GeneralSemantics<History>() override;
+	GeneralSemantics(History &history, AExecutionController &context);
+	virtual ~GeneralSemantics() override;
 
 	virtual shared_ptr<Transition> get_last_transition() = 0;
 	virtual void append(const Reference<AbstractAction> &) = 0;

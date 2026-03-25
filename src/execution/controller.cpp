@@ -139,20 +139,20 @@ void AExecutionController::terminate()
 
 void AExecutionController::exog_queue_push(shared_ptr<Reference<AbstractAction>> exog)
 {
-	std::lock_guard<std::mutex> { exog_mutex_ };
+	std::lock_guard<std::mutex> l1 { exog_mutex_ };
 	exog_queue_.push_back(std::move(exog));
 	{
-		std::lock_guard<std::mutex> { queue_empty_mutex_ };
+		std::lock_guard<std::mutex> l2 { queue_empty_mutex_ };
 		queue_empty_condition_.notify_one();
 	}
 }
 
 void AExecutionController::exog_queue_push_front(shared_ptr<Reference<AbstractAction> > exog)
 {
-	std::lock_guard<std::mutex> { exog_mutex_ };
+	std::lock_guard<std::mutex> l1 { exog_mutex_ };
 	exog_queue_.push_front(std::move(exog));
 	{
-		std::lock_guard<std::mutex> { queue_empty_mutex_ };
+		std::lock_guard<std::mutex> l2 { queue_empty_mutex_ };
 		queue_empty_condition_.notify_one();
 	}
 }

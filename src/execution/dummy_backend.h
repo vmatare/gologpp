@@ -22,6 +22,7 @@
 
 #include <random>
 #include <functional>
+#include <thread>
 
 namespace gologpp {
 

@@ -61,9 +61,6 @@ string AbstractAction::to_string(const string &pfx) const
 		+ linesep + pfx + "effect:" + linesep + concat_list(effects(), ";" linesep, pfx) + linesep "}";
 }
 
-bool AbstractAction::operator != (const AbstractAction &other) const
-{ return !(*this == other); }
-
 bool AbstractAction::operator == (const AbstractAction &other) const
 { return typeid(*this) == typeid(other) && hash() == other.hash(); }
 

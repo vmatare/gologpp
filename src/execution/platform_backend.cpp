@@ -22,6 +22,8 @@
 #include <model/logger.h>
 #include <model/platform/component_backend.h>
 
+#include <thread>
+
 namespace gologpp {
 
 PlatformBackend::PlatformBackend()

@@ -96,6 +96,7 @@ bool Domain::operator >= (const Type &other) const
 	}
 }
 
+
 bool Domain::operator >= (const AbstractLanguageElement &e) const
 {
 	if (*this >= e.type())
@@ -222,11 +223,11 @@ Domain domain_operation(const Domain &lhs, DomainOperator op, const Domain &rhs)
 {
 	switch(op) {
 	case UNION:
-		return std::move(domain_union(lhs, rhs));
+		return domain_union(lhs, rhs);
 	case DIFFERENCE:
-		return std::move(domain_difference(lhs, rhs));
+		return domain_difference(lhs, rhs);
 	case INTERSECTION:
-		return std::move(domain_intersection(lhs, rhs));
+		return domain_intersection(lhs, rhs);
 	}
 	throw Bug("Unhandled domain type");
 }

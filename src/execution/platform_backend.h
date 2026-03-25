@@ -28,7 +28,6 @@
 
 #include <unordered_set>
 #include <mutex>
-#include <thread>
 #include <unordered_map>
 #include <condition_variable>
 #include <atomic>
