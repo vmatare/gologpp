@@ -15,8 +15,8 @@
 # along with golog++.  If not, see <https://www.gnu.org/licenses/>.
 ###########################################################################
 
+cmake_minimum_required(VERSION 3.10)
 project(golog++)
-cmake_minimum_required(VERSION 3.0)
 
 include(CMakeDependentOption)
 include(GNUInstallDirs)
@@ -24,7 +24,7 @@ include(GNUInstallDirs)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(PkgConfig)
-find_package(Boost REQUIRED COMPONENTS filesystem program_options)
+find_package(Boost CONFIG REQUIRED COMPONENTS filesystem program_options)
 find_package(EclipseClp)
 find_package(Threads)
 
@@ -124,14 +124,8 @@ set(INTERFACE_SRC
 	src/model/platform/switch_state_action.cpp
 	src/model/platform/component_backend.cpp
 )
-add_library(golog++ SHARED ${INTERFACE_SRC})
-target_compile_options(golog++ PUBLIC -fPIC)
-target_link_libraries (golog++ ${CMAKE_THREAD_LIBS_INIT})
-set_property(TARGET golog++ PROPERTY SOVERSION ${GOLOGPP_VERSION})
-target_compile_features(golog++ PUBLIC cxx_std_17)
-install(TARGETS golog++ DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-install(FILES
+set(MODEL_HEADERS
 	src/model/model_element.h
 	src/model/abstract_reference.h
 	src/model/semantics.h
@@ -159,11 +153,9 @@ install(FILES
 	src/model/list_expression.h
 	src/model/logger.h
 	src/model/name.h
-
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/golog++/model
 )
 
-install(FILES
+set(EXECUTION_HEADERS
 	src/execution/transition.h
 	src/execution/history.h
 	src/execution/activity.h
@@ -173,11 +165,9 @@ install(FILES
 	src/execution/plan.h
 	src/execution/platform_backend.h
 	src/execution/transformation.h
-
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/golog++/execution
 )
 
-install(FILES
+set(PLATFORM_HEADERS
 	src/model/platform/component.h
 	src/model/platform/constraint.h
 	src/model/platform/clock_formula.h
@@ -185,9 +175,18 @@ install(FILES
 	src/model/platform/reference.h
 	src/model/platform/switch_state_action.h
 	src/model/platform/component_backend.h
-
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/golog++/model/platform
 )
+
+add_library(golog++ SHARED ${INTERFACE_SRC} ${MODEL_HEADERS} ${EXECUTION_HEADERS} ${PLATFORM_HEADERS})
+target_compile_options(golog++ PUBLIC -fPIC)
+target_link_libraries (golog++ ${CMAKE_THREAD_LIBS_INIT})
+set_property(TARGET golog++ PROPERTY SOVERSION ${GOLOGPP_VERSION})
+target_compile_features(golog++ PUBLIC cxx_std_17)
+
+install(TARGETS golog++ DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES ${MODEL_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/golog++/model)
+install(FILES ${EXECUTION_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/golog++/execution)
+install(FILES ${PLATFORM_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/golog++/model/platform)
 
 get_target_property(GOLOGPP_CXXFLAGS_L golog++ INTERFACE_COMPILE_OPTIONS)
 set(GOLOGPP_CXXFLAGS "")
@@ -236,15 +235,7 @@ if (${BUILD_PARSER})
 		src/parser/platform/constraint.cpp
 		src/parser/platform/reference.cpp
 	)
-	add_library(parsegolog++ SHARED ${PARSER_SRC})
-	target_link_libraries(parsegolog++ golog++)
-	set_property(TARGET parsegolog++ PROPERTY SOVERSION ${GOLOGPP_VERSION})
-	target_compile_options(parsegolog++ PRIVATE -Wno-undefined-func-template -O${OPTIMIZE_PARSER})
-	if (${DEBUG_PARSER})
-		target_compile_definitions(parsegolog++ PRIVATE -DBOOST_SPIRIT_DEBUG -DGOLOGPP_DEBUG_PARSER)
-	endif()
-	install(TARGETS parsegolog++ DESTINATION ${CMAKE_INSTALL_LIBDIR})
-	install(FILES
+	set(PARSER_HEADERS
 		src/parser/grammar.h
 		src/parser/parser.h
 		src/parser/formula.h
@@ -267,8 +258,16 @@ if (${BUILD_PARSER})
 		src/parser/mapping.h
 		src/parser/list_expression.h
 		src/parser/value.h
-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/golog++/parser
 	)
+	add_library(parsegolog++ SHARED ${PARSER_SRC} ${PARSER_HEADERS})
+	target_link_libraries(parsegolog++ golog++)
+	set_property(TARGET parsegolog++ PROPERTY SOVERSION ${GOLOGPP_VERSION})
+	target_compile_options(parsegolog++ PRIVATE -Wno-undefined-func-template -O${OPTIMIZE_PARSER})
+	if (${DEBUG_PARSER})
+		target_compile_definitions(parsegolog++ PRIVATE -DBOOST_SPIRIT_DEBUG -DGOLOGPP_DEBUG_PARSER)
+	endif()
+	install(TARGETS parsegolog++ DESTINATION ${CMAKE_INSTALL_LIBDIR})
+	install(FILES ${PARSER_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/golog++/parser)
 
 	install(FILES
 		src/parser/platform/clock_formula.h
@@ -320,18 +319,7 @@ if (${BUILD_READYLOG_SEMANTICS})
 		src/semantics/readylog/plan.cpp
 	)
 
-	link_directories(${ECLIPSE_LIBRARY_DIRS})
-	add_library(readylog++ SHARED ${READYLOG_SRC})
-	target_compile_definitions(readylog++ PUBLIC
-		-DECLIPSE_DIR=\"${ECLIPSE_DIR}\"
-		-DUSES_NO_ENGINE_HANDLE
-		-DSEMANTICS_INSTALL_DIR=\"${CMAKE_INSTALL_PREFIX}/${SEMANTICS_INSTALL_DIR}\"
-	)
-	target_include_directories(readylog++ PUBLIC ${ECLIPSE_INCLUDE_DIRS})
-	target_link_libraries(readylog++ golog++ ${ECLIPSE_LIBRARIES} stdc++fs)
-	set_property(TARGET readylog++ PROPERTY SOVERSION ${GOLOGPP_VERSION})
-	install(TARGETS readylog++ DESTINATION ${CMAKE_INSTALL_LIBDIR})
-	install(FILES
+	set(READYLOG_HEADERS
 		src/semantics/readylog/semantics.h
 		src/semantics/readylog/formula.h
 		src/semantics/readylog/effect_axiom.h
@@ -354,9 +342,21 @@ if (${BUILD_READYLOG_SEMANTICS})
 		src/semantics/readylog/activity.h
 		src/semantics/readylog/plan.h
 		src/semantics/readylog/wrap_eclipseclass.h
-
-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/golog++/semantics/readylog
 	)
+
+	add_library(readylog++ SHARED ${READYLOG_SRC} ${READYLOG_HEADERS})
+	target_compile_definitions(readylog++ PUBLIC
+		-DECLIPSE_DIR=\"${ECLIPSE_DIR}\"
+		-DUSES_NO_ENGINE_HANDLE
+		-DSEMANTICS_INSTALL_DIR=\"${CMAKE_INSTALL_PREFIX}/${SEMANTICS_INSTALL_DIR}\"
+	)
+	target_link_directories(readylog++ PUBLIC ${ECLIPSE_LIBRARY_DIRS})
+	target_include_directories(readylog++ PUBLIC ${ECLIPSE_INCLUDE_DIRS})
+	target_link_libraries(readylog++ PUBLIC golog++ stdc++fs ${ECLIPSE_LIBRARIES})
+	set_property(TARGET readylog++ PROPERTY SOVERSION ${GOLOGPP_VERSION})
+	install(TARGETS readylog++ DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+	install(FILES ${READYLOG_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/golog++/semantics/readylog)
 
 	install(FILES
 		src/semantics/readylog/boilerplate.pl
