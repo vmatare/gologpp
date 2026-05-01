@@ -15,8 +15,8 @@
 # along with golog++.  If not, see <https://www.gnu.org/licenses/>.
 ###########################################################################
 
+cmake_minimum_required(VERSION 3.10)
 project(golog++)
-cmake_minimum_required(VERSION 3.0)
 
 include(CMakeDependentOption)
 include(GNUInstallDirs)
@@ -24,8 +24,8 @@ include(GNUInstallDirs)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(PkgConfig)
-find_package(Boost REQUIRED COMPONENTS filesystem program_options)
-find_package(EclipseClp)
+find_package(Boost CONFIG REQUIRED COMPONENTS filesystem program_options)
+include(eclipse)
 find_package(Threads)
 
 pkg_check_modules(SWIPL "swipl")
@@ -320,16 +320,17 @@ if (${BUILD_READYLOG_SEMANTICS})
 		src/semantics/readylog/plan.cpp
 	)
 
-	link_directories(${ECLIPSE_LIBRARY_DIRS})
 	add_library(readylog++ SHARED ${READYLOG_SRC})
 	target_compile_definitions(readylog++ PUBLIC
 		-DECLIPSE_DIR=\"${ECLIPSE_DIR}\"
 		-DUSES_NO_ENGINE_HANDLE
 		-DSEMANTICS_INSTALL_DIR=\"${CMAKE_INSTALL_PREFIX}/${SEMANTICS_INSTALL_DIR}\"
 	)
-	target_include_directories(readylog++ PUBLIC ${ECLIPSE_INCLUDE_DIRS})
-	target_link_libraries(readylog++ golog++ ${ECLIPSE_LIBRARIES} stdc++fs)
+	target_link_libraries(readylog++ golog++ eclipse stdc++fs)
+	#set_target_properties(readylog++ PROPERTIES BUILD_RPATH ${ECLIPSE_LIBDIR})
+
 	set_property(TARGET readylog++ PROPERTY SOVERSION ${GOLOGPP_VERSION})
+	set_property(TARGET readylog++ PROPERTY SKIP_BUILD_RPATH true)
 	install(TARGETS readylog++ DESTINATION ${CMAKE_INSTALL_LIBDIR})
 	install(FILES
 		src/semantics/readylog/semantics.h
@@ -371,13 +372,11 @@ if (${BUILD_READYLOG_SEMANTICS})
 	endif()
 
 	get_target_property(READYLOGPP_CXXFLAGS_L readylog++ INTERFACE_COMPILE_OPTIONS)
-	set(READYLOGPP_CXXFLAGS "-I${ECLIPSE_INCLUDE_DIRS}")
 	if (${READYLOGPP_CXXFLAGS_L})
 		foreach(i IN LISTS ${READYLOGPP_CXXFLAGS_L})
 			set(READYLOGPP_CXXFLAGS "${READYLOGPP_CXXFLAGS} ${i}")
 		endforeach()
 	endif()
-	set(READYLOGPP_LDFLAGS "${ECLIPSE_LDFLAGS}")
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/readylog++.pc.in ${CMAKE_CURRENT_BINARY_DIR}/readylog++.pc @ONLY)
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/readylog++.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 endif()
